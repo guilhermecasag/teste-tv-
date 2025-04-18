@@ -10,7 +10,7 @@
   "dependencies": {
     "@wppconnect-team/wppconnect": "^1.22.1",
     "puppeteer-core": "^21.3.8",
-    "@sparticuz/chromium-min": "^110.0.1",
+    "@sparticuz/chromium-min": "^119.0.2",
     "dotenv": "^16.4.1"
   },
   "engines": {
