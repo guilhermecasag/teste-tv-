@@ -1,0 +1,19 @@
+{
+  "name": "bot-whatsapp",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "install-chromium": "node install-chromium.js",
+    "fix-deps": "rm -rf node_modules package-lock.json && npm install"
+  },
+  "dependencies": {
+    "@wppconnect-team/wppconnect": "^1.22.1",
+    "puppeteer-core": "^21.3.8",
+    "@sparticuz/chromium-min": "^110.0.1",
+    "dotenv": "^16.4.1"
+  },
+  "puppeteer": {
+    "default_browser_revision": "1122928"
+  }
+}
