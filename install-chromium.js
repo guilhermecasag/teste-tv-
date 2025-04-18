@@ -1,2 +1,2 @@
 const { downloadBrowser } = require('puppeteer-core/internal/node/install.js');
-downloadBrowser();
+downloadBrowser().catch(e => console.error('Chromium download failed:', e));
