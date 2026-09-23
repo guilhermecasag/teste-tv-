@@ -1,19 +1,42 @@
 {
-  "name": "bot-whatsapp",
-  "version": "1.0.0",
-  "main": "index.js",
+  "name": "teste-tv-",
+  "version": "0.1.0",
+  "private": true,
   "scripts": {
-    "start": "node index.js",
-    "install-chromium": "node install-chromium.js",
-    "postinstall": "npm run install-chromium"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "db:migrate": "prisma migrate dev",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:studio": "prisma studio"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
-    "@wppconnect-team/wppconnect": "^1.22.1",
-    "puppeteer-core": "^21.3.8",
-    "@sparticuz/chromium-min": "^119.0.2",
-    "dotenv": "^16.4.1"
+    "@auth/core": "^0.41.3",
+    "@prisma/client": "^6.19.3",
+    "bcryptjs": "^3.0.3",
+    "next": "^15.5.26",
+    "next-auth": "^5.0.0-beta.32",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "zod": "^4.6.5"
   },
-  "engines": {
-    "node": "18.x"
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.7",
+    "@tailwindcss/postcss": "^4",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "^15.5.26",
+    "playwright-core": "^1.63.0",
+    "prisma": "^6.19.3",
+    "tailwindcss": "^4",
+    "tsx": "^4.23.15",
+    "typescript": "^5"
   }
 }

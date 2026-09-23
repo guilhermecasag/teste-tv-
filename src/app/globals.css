@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f7f8f7;
+  --surface: #ffffff;
+  --foreground: #2e2b2c;
+  --muted: #6b6a6a;
+  --border: #e4e5e3;
+
+  /* Marca LTM Automacao - extraidas do logo oficial */
+  --brand-primary: #01ab4d;
+  --brand-primary-dark: #018a3e;
+  --brand-primary-light: #e6f7ec;
+  --brand-dark: #2e2b2c;
+
+  /* Estados de equipamento/montagem */
+  --status-concluido: #01ab4d;
+  --status-andamento: #f59e0b;
+  --status-bloqueado: #dc2626;
+  --status-pendente: #94a3b8;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-primary-dark: var(--brand-primary-dark);
+  --color-brand-primary-light: var(--brand-primary-light);
+  --color-brand-dark: var(--brand-dark);
+
+  --color-status-concluido: var(--status-concluido);
+  --color-status-andamento: var(--status-andamento);
+  --color-status-bloqueado: var(--status-bloqueado);
+  --color-status-pendente: var(--status-pendente);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #17181a;
+    --surface: #202224;
+    --foreground: #f2f2f2;
+    --muted: #9a9a9a;
+    --border: #34363a;
+    --brand-primary-light: #10321f;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
