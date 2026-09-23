@@ -7,6 +7,9 @@ import { TravelInfoForm } from "./travel-info-form";
 import { EquipmentList } from "@/components/equipment/equipment-list";
 import { AddEquipmentButton } from "./add-equipment-button";
 import { updateTravelInfoAction } from "@/actions/trips";
+import { getTripCoords, getHotelCoords } from "@/lib/trip-location";
+import { WeatherCard } from "@/components/weather-card";
+import { NearbyPlaces } from "@/components/nearby-places";
 
 const STATUS_LABEL: Record<string, string> = {
   PLANEJADA: "Planejada",
@@ -56,6 +59,11 @@ export default async function ViagemDetailPage({
   });
 
   if (!trip) notFound();
+
+  const [tripCoords, hotelCoords] = await Promise.all([
+    getTripCoords(trip),
+    trip.travelInfo ? getHotelCoords(trip.travelInfo) : Promise.resolve(null),
+  ]);
 
   const [clients, allMontadores, allEspectadores] = await Promise.all([
     prisma.client.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true } }),
@@ -185,6 +193,16 @@ export default async function ViagemDetailPage({
               notes: trip.travelInfo?.notes ?? null,
             }}
           />
+        </div>
+      </details>
+
+      <details className="card mt-4">
+        <summary className="cursor-pointer text-sm font-semibold text-foreground">
+          🌤 Clima & 📍 Locais próximos
+        </summary>
+        <div className="mt-3 flex flex-col gap-4">
+          <WeatherCard coords={tripCoords} />
+          <NearbyPlaces tripCoords={tripCoords} hotelCoords={hotelCoords} />
         </div>
       </details>
 

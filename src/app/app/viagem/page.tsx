@@ -2,6 +2,9 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { MontadorShell } from "@/components/montador-shell";
 import { getActiveTripForMontador } from "@/lib/trips";
+import { getTripCoords, getHotelCoords } from "@/lib/trip-location";
+import { WeatherCard } from "@/components/weather-card";
+import { NearbyPlaces } from "@/components/nearby-places";
 
 const STATUS_LABEL: Record<string, string> = {
   PLANEJADA: "Planejada",
@@ -29,6 +32,11 @@ export default async function MontadorViagemPage() {
     where: { id: activeTrip.id },
     include: { client: true, travelInfo: true },
   });
+
+  const [tripCoords, hotelCoords] = await Promise.all([
+    getTripCoords(trip),
+    trip.travelInfo ? getHotelCoords(trip.travelInfo) : Promise.resolve(null),
+  ]);
 
   return (
     <MontadorShell userName={session.user.name ?? ""}>
@@ -84,15 +92,9 @@ export default async function MontadorViagemPage() {
         )}
       </div>
 
-      <div className="card mt-4">
-        <p className="mb-2 text-sm font-semibold text-foreground">🌤 Clima</p>
-        <p className="text-sm text-muted">Previsão do tempo indisponível.</p>
-      </div>
+      <WeatherCard coords={tripCoords} />
 
-      <div className="card mt-4">
-        <p className="mb-2 text-sm font-semibold text-foreground">📍 Locais próximos</p>
-        <p className="text-sm text-muted">Busca de locais próximos indisponível.</p>
-      </div>
+      <NearbyPlaces tripCoords={tripCoords} hotelCoords={hotelCoords} />
     </MontadorShell>
   );
 }

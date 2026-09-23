@@ -24,7 +24,9 @@ autenticação/permissões testado ponta a ponta em navegador real a cada fase.
       as 4 telas do montador (Início/Viagem/Montagem/Perfil, com bottom
       nav mobile e sidebar no desktop) e a tela do espectador (somente
       leitura, com controle de acesso por viagem).
-- [ ] Fase 5 — localização e clima
+- [x] **Fase 5** — clima (Open-Meteo, com cache de ~3h em banco) e locais
+      próximos (OpenStreetMap Nominatim + Overpass) com escolha de origem
+      (minha localização / local da viagem / local do hotel).
 - [ ] Fase 6 — notificações (push) e tempo real
 - [ ] Fase 7 — PWA, responsividade final, segurança, testes
 
@@ -48,6 +50,17 @@ autenticação/permissões testado ponta a ponta em navegador real a cada fase.
 > projeto não tinha chaves de API configuradas. Essas alternativas são
 > gratuitas, não exigem cadastro nem cartão, e entregam dados reais — em vez
 > de exibir "não configurado" em duas das telas mais visíveis do app.
+
+> **Nota sobre o ambiente de desenvolvimento usado para construir isto:**
+> a rede da sandbox onde este projeto foi desenvolvido bloqueia domínios
+> externos (só libera npm, PyPI e pouco mais). Não foi possível testar as
+> chamadas reais a Nominatim/Overpass/Open-Meteo ao vivo nela. O que foi
+> validado: parsing das respostas dessas APIs com dados de exemplo reais
+> (incluindo a lógica de cache e o fallback quando a API está fora), e o
+> comportamento da tela quando a chamada falha de verdade — o que essa
+> mesma restrição de rede permitiu testar honestamente, sem simulação. Em
+> qualquer ambiente com saída de internet normal (produção, Vercel, etc.)
+> as chamadas funcionam sem configuração adicional.
 
 ## Papéis de usuário
 

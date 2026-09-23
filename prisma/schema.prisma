@@ -108,6 +108,9 @@ model Trip {
   address        String?
   city           String
   state          String
+  /// Geocodificadas sob demanda (Nominatim) a partir de address/city/state - secao 9/10.
+  latitude       Float?
+  longitude      Float?
   startDate      DateTime
   endDate        DateTime
   status         TripStatus     @default(PLANEJADA)
@@ -141,6 +144,9 @@ model TripTravelInfo {
   hotelPhone     String?
   hotelCheckIn   DateTime?
   hotelCheckOut  DateTime?
+  /// Geocodificadas sob demanda a partir de hotelAddress - secao 9.
+  hotelLatitude  Float?
+  hotelLongitude Float?
 
   notes String?
 
@@ -255,4 +261,17 @@ model TimelineEvent {
   createdAt DateTime @default(now())
 
   @@map("timeline_events")
+}
+
+/// Cache da previsao do tempo (Open-Meteo) por coordenada, para nao
+/// bater na API a cada carregamento de tela - secao 10 do briefing.
+model WeatherCache {
+  id          String   @id @default(cuid())
+  locationKey String   @unique
+  latitude    Float
+  longitude   Float
+  payload     Json
+  fetchedAt   DateTime @default(now())
+
+  @@map("weather_cache")
 }
