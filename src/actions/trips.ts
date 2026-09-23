@@ -4,6 +4,16 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/guards";
+import { addTimelineEvent } from "@/lib/timeline";
+
+const STATUS_LABEL: Record<string, string> = {
+  PLANEJADA: "Planejada",
+  EM_DESLOCAMENTO: "Em deslocamento",
+  EM_MONTAGEM: "Em montagem",
+  PAUSADA: "Pausada",
+  CONCLUIDA: "Concluída",
+  CANCELADA: "Cancelada",
+};
 
 const tripStatusEnum = z.enum([
   "PLANEJADA",
@@ -46,7 +56,7 @@ export async function createTripAction(
   _prev: TripFormState,
   formData: FormData
 ): Promise<TripFormState> {
-  await requireAdmin();
+  const session = await requireAdmin();
 
   const parsed = tripSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
@@ -73,6 +83,13 @@ export async function createTripAction(
     },
   });
 
+  await addTimelineEvent({
+    tripId: trip.id,
+    userId: session.user.id,
+    type: "VIAGEM_STATUS",
+    message: `Viagem criada — status inicial: ${STATUS_LABEL[trip.status]}.`,
+  });
+
   revalidatePath("/admin/viagens");
   return { error: null, tripId: trip.id };
 }
@@ -82,7 +99,7 @@ export async function updateTripAction(
   _prev: TripFormState,
   formData: FormData
 ): Promise<TripFormState> {
-  await requireAdmin();
+  const session = await requireAdmin();
 
   const parsed = tripSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
@@ -91,6 +108,8 @@ export async function updateTripAction(
 
   const memberIds = parseMembers(formData);
   const viewerIds = parseViewers(formData);
+
+  const before = await prisma.trip.findUniqueOrThrow({ where: { id: tripId } });
 
   await prisma.$transaction([
     prisma.trip.update({
@@ -116,6 +135,15 @@ export async function updateTripAction(
       data: viewerIds.map((userId) => ({ tripId, userId })),
     }),
   ]);
+
+  if (before.status !== parsed.data.status) {
+    await addTimelineEvent({
+      tripId,
+      userId: session.user.id,
+      type: "VIAGEM_STATUS",
+      message: `Status da viagem alterado para ${STATUS_LABEL[parsed.data.status]}.`,
+    });
+  }
 
   revalidatePath("/admin/viagens");
   revalidatePath(`/admin/viagens/${tripId}`);

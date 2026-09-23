@@ -5,6 +5,10 @@ import {
   updateEquipmentStatusAction,
   deleteEquipmentAction,
 } from "@/actions/equipment";
+import { Modal } from "@/components/modal";
+import { EquipmentDetailModalBody } from "./equipment-detail-modal";
+
+type Option = { id: string; name: string };
 
 type Equipment = {
   id: string;
@@ -13,6 +17,19 @@ type Equipment = {
   status: "PENDENTE" | "EM_ANDAMENTO" | "CONCLUIDO" | "BLOQUEADO";
   weight: number;
   responsible: { name: string } | null;
+  observation: string | null;
+  photos: {
+    id: string;
+    url: string;
+    category: "INICIO" | "ANDAMENTO" | "CONCLUIDO" | "PROBLEMA" | "GERAL";
+    uploadedBy: { name: string } | null;
+  }[];
+  issues: {
+    id: string;
+    description: string;
+    status: "ABERTA" | "RESOLVIDA";
+    responsible: { name: string } | null;
+  }[];
 };
 
 const STATUS_META: Record<
@@ -36,10 +53,12 @@ export function EquipmentList({
   tripId,
   equipment,
   progressMethod,
+  montadores,
 }: {
   tripId: string;
   equipment: Equipment[];
   progressMethod: string;
+  montadores: Option[];
 }) {
   const [pending, startTransition] = useTransition();
 
@@ -88,21 +107,33 @@ export function EquipmentList({
         <ul className="flex flex-col gap-2">
           {equipment.map((eq) => {
             const meta = STATUS_META[eq.status];
+            const openIssues = eq.issues.filter((i) => i.status === "ABERTA").length;
             return (
               <li
                 key={eq.id}
                 className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border px-3 py-2"
               >
-                <div>
-                  <p className="text-sm font-medium text-foreground">
-                    {meta.icon} {eq.name}
-                    {eq.code && <span className="text-muted"> · {eq.code}</span>}
-                  </p>
-                  <p className="text-xs text-muted">
-                    {eq.responsible?.name ?? "Sem responsável"}
-                    {progressMethod === "PONDERADO" && ` · peso ${eq.weight}`}
-                  </p>
-                </div>
+                <Modal
+                  title={eq.name}
+                  trigger={
+                    <button type="button" className="text-left">
+                      <p className="text-sm font-medium text-foreground hover:text-brand-primary">
+                        {meta.icon} {eq.name}
+                        {eq.code && <span className="text-muted"> · {eq.code}</span>}
+                      </p>
+                      <p className="text-xs text-muted">
+                        {eq.responsible?.name ?? "Sem responsável"}
+                        {progressMethod === "PONDERADO" && ` · peso ${eq.weight}`}
+                        {eq.photos.length > 0 && ` · 📷 ${eq.photos.length}`}
+                        {openIssues > 0 && ` · ⚠️ ${openIssues}`}
+                      </p>
+                    </button>
+                  }
+                >
+                  {() => (
+                    <EquipmentDetailModalBody tripId={tripId} equipment={eq} montadores={montadores} />
+                  )}
+                </Modal>
 
                 <div className="flex items-center gap-2">
                   <span className={`badge ${meta.className}`}>{meta.label}</span>

@@ -17,6 +17,7 @@
   "dependencies": {
     "@auth/core": "^0.41.3",
     "@prisma/client": "^6.19.3",
+    "@supabase/supabase-js": "^2.117.1",
     "bcryptjs": "^3.0.3",
     "next": "^15.5.26",
     "next-auth": "^5.0.0-beta.32",

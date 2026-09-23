@@ -17,7 +17,9 @@ autenticação/permissões testado ponta a ponta em navegador real a cada fase.
 - [x] **Fase 2** — clientes, viagens (com equipe e dados de deslocamento/
       hospedagem), montadores, usuários, equipamentos e cálculo automático
       de progresso (%) por viagem.
-- [ ] Fase 3 — observações por equipamento, fotos, pendências, timeline
+- [x] **Fase 3** — observação por equipamento, fotos (upload real, disco
+      local ou Supabase Storage), pendências (abrir/resolver) e timeline
+      automática da viagem.
 - [ ] Fase 4 — dashboard, tela do montador, tela do espectador
 - [ ] Fase 5 — localização e clima
 - [ ] Fase 6 — notificações (push) e tempo real

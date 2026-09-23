@@ -17,6 +17,15 @@ const STATUS_LABEL: Record<string, string> = {
   CANCELADA: "Cancelada",
 };
 
+const TIMELINE_ICON: Record<string, string> = {
+  VIAGEM_STATUS: "🚩",
+  EQUIPAMENTO_STATUS: "🔧",
+  EQUIPAMENTO_OBSERVACAO: "📝",
+  EQUIPAMENTO_FOTO: "📷",
+  PENDENCIA_ABERTA: "⚠️",
+  PENDENCIA_RESOLVIDA: "✓",
+};
+
 export default async function ViagemDetailPage({
   params,
 }: {
@@ -34,7 +43,15 @@ export default async function ViagemDetailPage({
       travelInfo: true,
       members: { include: { user: true } },
       viewers: { include: { user: true } },
-      equipment: { include: { responsible: true }, orderBy: { createdAt: "asc" } },
+      equipment: {
+        include: {
+          responsible: true,
+          photos: { include: { uploadedBy: true }, orderBy: { createdAt: "desc" } },
+          issues: { include: { responsible: true }, orderBy: { createdAt: "desc" } },
+        },
+        orderBy: { createdAt: "asc" },
+      },
+      timeline: { include: { user: true, equipment: true }, orderBy: { createdAt: "desc" } },
     },
   });
 
@@ -111,6 +128,7 @@ export default async function ViagemDetailPage({
             tripId={trip.id}
             equipment={trip.equipment}
             progressMethod={trip.progressMethod}
+            montadores={allMontadores}
           />
         </div>
       </details>
@@ -167,6 +185,35 @@ export default async function ViagemDetailPage({
               notes: trip.travelInfo?.notes ?? null,
             }}
           />
+        </div>
+      </details>
+
+      <details className="card mt-4">
+        <summary className="cursor-pointer text-sm font-semibold text-foreground">
+          🕓 Timeline
+        </summary>
+        <div className="mt-3">
+          {trip.timeline.length === 0 ? (
+            <p className="text-sm text-muted">Nenhum evento registrado ainda.</p>
+          ) : (
+            <ul className="flex flex-col gap-3">
+              {trip.timeline.map((event) => (
+                <li key={event.id} className="flex gap-3 text-sm">
+                  <span className="w-24 shrink-0 text-xs text-muted">
+                    {event.createdAt.toLocaleDateString("pt-BR")}{" "}
+                    {event.createdAt.toLocaleTimeString("pt-BR", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                  <span className="text-foreground">
+                    {TIMELINE_ICON[event.type]} {event.message}
+                    {event.user && <span className="text-muted"> · {event.user.name}</span>}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </details>
     </AdminShell>

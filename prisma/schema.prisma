@@ -34,6 +34,28 @@ enum EquipmentStatus {
   BLOQUEADO
 }
 
+enum PhotoCategory {
+  INICIO
+  ANDAMENTO
+  CONCLUIDO
+  PROBLEMA
+  GERAL
+}
+
+enum IssueStatus {
+  ABERTA
+  RESOLVIDA
+}
+
+enum TimelineEventType {
+  VIAGEM_STATUS
+  EQUIPAMENTO_STATUS
+  EQUIPAMENTO_OBSERVACAO
+  EQUIPAMENTO_FOTO
+  PENDENCIA_ABERTA
+  PENDENCIA_RESOLVIDA
+}
+
 model User {
   id           String   @id @default(cuid())
   name         String
@@ -49,8 +71,11 @@ model User {
 
   tripMemberships      TripUser[]
   responsibleFor       Equipment[]
-  createdClients       Client[]     @relation("ClientCreatedBy")
-  espectadorTrips       TripViewer[]
+  createdClients       Client[]         @relation("ClientCreatedBy")
+  espectadorTrips      TripViewer[]
+  uploadedPhotos       EquipmentPhoto[]
+  reportedIssues       EquipmentIssue[]
+  timelineEvents       TimelineEvent[]
 
   @@map("users")
 }
@@ -95,6 +120,7 @@ model Trip {
   members    TripUser[]
   viewers    TripViewer[]
   equipment  Equipment[]
+  timeline   TimelineEvent[]
 
   @@map("trips")
 }
@@ -157,6 +183,8 @@ model Equipment {
   name        String
   code        String?
   description String?
+  /// Observacao atual do montador sobre o andamento (secao 13 do briefing).
+  observation String?
   status      EquipmentStatus @default(PENDENTE)
   /// Peso usado quando trip.progressMethod = PONDERADO. Ignorado em IGUAL.
   weight      Float           @default(1)
@@ -170,5 +198,61 @@ model Equipment {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  photos EquipmentPhoto[]
+  issues EquipmentIssue[]
+  timeline TimelineEvent[]
+
   @@map("equipment")
+}
+
+model EquipmentPhoto {
+  id          String        @id @default(cuid())
+  equipmentId String
+  equipment   Equipment     @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+  url         String
+  category    PhotoCategory @default(GERAL)
+
+  uploadedById String?
+  uploadedBy   User?   @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  @@map("equipment_photos")
+}
+
+model EquipmentIssue {
+  id          String @id @default(cuid())
+  equipmentId String
+  equipment   Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+
+  description String
+  status      IssueStatus @default(ABERTA)
+
+  responsibleId String?
+  responsible   User?   @relation(fields: [responsibleId], references: [id], onDelete: SetNull)
+
+  createdAt  DateTime  @default(now())
+  resolvedAt DateTime?
+
+  @@map("equipment_issues")
+}
+
+/// Feed cronologico da viagem (secoes 19 e 34 do briefing).
+model TimelineEvent {
+  id     String @id @default(cuid())
+  tripId String
+  trip   Trip   @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  equipmentId String?
+  equipment   Equipment? @relation(fields: [equipmentId], references: [id], onDelete: SetNull)
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  type    TimelineEventType
+  message String
+
+  createdAt DateTime @default(now())
+
+  @@map("timeline_events")
 }
