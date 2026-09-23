@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { AdminShell } from "@/components/admin-shell";
 import { EditTripButton } from "./edit-trip-button";
 import { TravelInfoForm } from "./travel-info-form";
-import { EquipmentList } from "./equipment-list";
+import { EquipmentList } from "@/components/equipment/equipment-list";
 import { AddEquipmentButton } from "./add-equipment-button";
 import { updateTravelInfoAction } from "@/actions/trips";
 

@@ -5,7 +5,7 @@ import { unlink } from "fs/promises";
 import path from "path";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/guards";
+import { requireAdmin, requireTripMember } from "@/lib/guards";
 import { addTimelineEvent } from "@/lib/timeline";
 import { saveEquipmentPhoto } from "@/lib/storage";
 
@@ -84,7 +84,7 @@ export async function updateEquipmentStatusAction(
   tripId: string,
   status: z.infer<typeof statusEnum>
 ) {
-  const session = await requireAdmin();
+  const session = await requireTripMember(tripId);
   const parsedStatus = statusEnum.parse(status);
 
   const equipment = await prisma.equipment.update({
@@ -106,6 +106,8 @@ export async function updateEquipmentStatusAction(
 
   revalidatePath(`/admin/viagens/${tripId}`);
   revalidatePath("/admin/equipamentos");
+  revalidatePath("/app");
+  revalidatePath("/app/montagem");
 }
 
 const observationSchema = z.object({ observation: z.string().optional() });
@@ -118,7 +120,7 @@ export async function updateObservationAction(
   _prev: ObservationFormState,
   formData: FormData
 ): Promise<ObservationFormState> {
-  const session = await requireAdmin();
+  const session = await requireTripMember(tripId);
 
   const parsed = observationSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
@@ -139,6 +141,7 @@ export async function updateObservationAction(
   });
 
   revalidatePath(`/admin/viagens/${tripId}`);
+  revalidatePath("/app/montagem");
   return { error: null };
 }
 
@@ -152,7 +155,7 @@ export async function uploadPhotoAction(
   _prev: PhotoFormState,
   formData: FormData
 ): Promise<PhotoFormState> {
-  const session = await requireAdmin();
+  const session = await requireTripMember(tripId);
 
   const file = formData.get("file");
   const category = photoCategoryEnum.safeParse(formData.get("category"));
@@ -191,6 +194,7 @@ export async function uploadPhotoAction(
   });
 
   revalidatePath(`/admin/viagens/${tripId}`);
+  revalidatePath("/app/montagem");
   return { error: null };
 }
 
@@ -221,7 +225,7 @@ export async function createIssueAction(
   _prev: IssueFormState,
   formData: FormData
 ): Promise<IssueFormState> {
-  const session = await requireAdmin();
+  const session = await requireTripMember(tripId);
 
   const parsed = issueSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
@@ -247,11 +251,12 @@ export async function createIssueAction(
   });
 
   revalidatePath(`/admin/viagens/${tripId}`);
+  revalidatePath("/app/montagem");
   return { error: null };
 }
 
 export async function resolveIssueAction(issueId: string, tripId: string) {
-  const session = await requireAdmin();
+  const session = await requireTripMember(tripId);
 
   const issue = await prisma.equipmentIssue.update({
     where: { id: issueId },
@@ -268,4 +273,5 @@ export async function resolveIssueAction(issueId: string, tripId: string) {
   });
 
   revalidatePath(`/admin/viagens/${tripId}`);
+  revalidatePath("/app/montagem");
 }

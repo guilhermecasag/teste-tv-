@@ -68,7 +68,15 @@ function ObservationSection({ tripId, equipment }: { tripId: string; equipment: 
   );
 }
 
-function PhotosSection({ tripId, equipment }: { tripId: string; equipment: Equipment }) {
+function PhotosSection({
+  tripId,
+  equipment,
+  canDelete,
+}: {
+  tripId: string;
+  equipment: Equipment;
+  canDelete: boolean;
+}) {
   const initial: PhotoFormState = { error: null };
   const [state, formAction, pending] = useActionState(
     uploadPhotoAction.bind(null, equipment.id, tripId),
@@ -117,14 +125,16 @@ function PhotosSection({ tripId, equipment }: { tripId: string; equipment: Equip
               <span className="absolute left-1 top-1 badge bg-black/60 text-white">
                 {CATEGORY_LABEL[photo.category]}
               </span>
-              <button
-                type="button"
-                disabled={deleting}
-                onClick={() => startDelete(() => deletePhotoAction(photo.id, tripId))}
-                className="absolute right-1 top-1 rounded-full bg-black/60 px-1.5 text-xs text-white opacity-0 transition group-hover:opacity-100"
-              >
-                ✕
-              </button>
+              {canDelete && (
+                <button
+                  type="button"
+                  disabled={deleting}
+                  onClick={() => startDelete(() => deletePhotoAction(photo.id, tripId))}
+                  className="absolute right-1 top-1 rounded-full bg-black/60 px-1.5 text-xs text-white opacity-0 transition group-hover:opacity-100"
+                >
+                  ✕
+                </button>
+              )}
             </div>
           ))}
         </div>
@@ -224,10 +234,12 @@ export function EquipmentDetailModalBody({
   tripId,
   equipment,
   montadores,
+  canManage = true,
 }: {
   tripId: string;
   equipment: Equipment;
   montadores: Option[];
+  canManage?: boolean;
 }) {
   return (
     <div className="flex flex-col gap-5">
@@ -237,7 +249,7 @@ export function EquipmentDetailModalBody({
       </div>
       <div>
         <p className="mb-1.5 text-sm font-semibold text-foreground">Fotos</p>
-        <PhotosSection tripId={tripId} equipment={equipment} />
+        <PhotosSection tripId={tripId} equipment={equipment} canDelete={canManage} />
       </div>
       <div>
         <p className="mb-1.5 text-sm font-semibold text-foreground">Pendências</p>

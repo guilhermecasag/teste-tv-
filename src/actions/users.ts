@@ -4,7 +4,7 @@ import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/guards";
+import { requireAdmin, requireSession } from "@/lib/guards";
 
 const roleEnum = z.enum(["ADMIN", "MONTADOR", "ESPECTADOR"]);
 
@@ -118,4 +118,40 @@ export async function toggleUserActiveAction(userId: string) {
 
   revalidatePath("/admin/usuarios");
   revalidatePath("/admin/montadores");
+}
+
+const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, "Informe sua senha atual."),
+    newPassword: z.string().min(6, "A nova senha precisa ter pelo menos 6 caracteres."),
+    confirmPassword: z.string().min(1),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "A confirmação não corresponde à nova senha.",
+    path: ["confirmPassword"],
+  });
+
+export type ChangePasswordFormState = { error: string | null; success?: boolean };
+
+export async function changeOwnPasswordAction(
+  _prev: ChangePasswordFormState,
+  formData: FormData
+): Promise<ChangePasswordFormState> {
+  const session = await requireSession();
+
+  const parsed = changePasswordSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Dados inválidos." };
+  }
+
+  const user = await prisma.user.findUniqueOrThrow({ where: { id: session.user.id } });
+  const valid = await bcrypt.compare(parsed.data.currentPassword, user.passwordHash);
+  if (!valid) {
+    return { error: "Senha atual incorreta." };
+  }
+
+  const passwordHash = await bcrypt.hash(parsed.data.newPassword, 10);
+  await prisma.user.update({ where: { id: user.id }, data: { passwordHash } });
+
+  return { error: null, success: true };
 }

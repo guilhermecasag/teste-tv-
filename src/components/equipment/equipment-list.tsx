@@ -54,11 +54,13 @@ export function EquipmentList({
   equipment,
   progressMethod,
   montadores,
+  canManage = true,
 }: {
   tripId: string;
   equipment: Equipment[];
   progressMethod: string;
   montadores: Option[];
+  canManage?: boolean;
 }) {
   const [pending, startTransition] = useTransition();
 
@@ -131,7 +133,12 @@ export function EquipmentList({
                   }
                 >
                   {() => (
-                    <EquipmentDetailModalBody tripId={tripId} equipment={eq} montadores={montadores} />
+                    <EquipmentDetailModalBody
+                      tripId={tripId}
+                      equipment={eq}
+                      montadores={montadores}
+                      canManage={canManage}
+                    />
                   )}
                 </Modal>
 
@@ -156,19 +163,21 @@ export function EquipmentList({
                     ))}
                   </select>
 
-                  <button
-                    type="button"
-                    disabled={pending}
-                    className="btn-danger"
-                    onClick={() => {
-                      if (!confirm(`Excluir "${eq.name}"?`)) return;
-                      startTransition(() => {
-                        deleteEquipmentAction(eq.id, tripId);
-                      });
-                    }}
-                  >
-                    Excluir
-                  </button>
+                  {canManage && (
+                    <button
+                      type="button"
+                      disabled={pending}
+                      className="btn-danger"
+                      onClick={() => {
+                        if (!confirm(`Excluir "${eq.name}"?`)) return;
+                        startTransition(() => {
+                          deleteEquipmentAction(eq.id, tripId);
+                        });
+                      }}
+                    >
+                      Excluir
+                    </button>
+                  )}
                 </div>
               </li>
             );

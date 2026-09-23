@@ -20,7 +20,10 @@ autenticação/permissões testado ponta a ponta em navegador real a cada fase.
 - [x] **Fase 3** — observação por equipamento, fotos (upload real, disco
       local ou Supabase Storage), pendências (abrir/resolver) e timeline
       automática da viagem.
-- [ ] Fase 4 — dashboard, tela do montador, tela do espectador
+- [x] **Fase 4** — dashboard administrativo com % por viagem, navegação e
+      as 4 telas do montador (Início/Viagem/Montagem/Perfil, com bottom
+      nav mobile e sidebar no desktop) e a tela do espectador (somente
+      leitura, com controle de acesso por viagem).
 - [ ] Fase 5 — localização e clima
 - [ ] Fase 6 — notificações (push) e tempo real
 - [ ] Fase 7 — PWA, responsividade final, segurança, testes
