@@ -31,7 +31,13 @@ autenticação/permissões testado ponta a ponta em navegador real a cada fase.
       (gerado localmente, sem conta de terceiro) e tempo real via SSE —
       viagens/equipamentos/pendências avisam quem precisa saber, e a tela
       de quem está olhando atualiza sozinha, sem F5.
-- [ ] Fase 7 — PWA, responsividade final, segurança, testes
+- [x] **Fase 7** — PWA instalável (manifest + service worker com cache
+      seguro só para assets estáticos), responsividade validada em
+      375px em todas as áreas, hardening de segurança (rate limit de
+      login, headers HTTP, correção de um bug real de produção) e
+      testes finais.
+
+Todas as 7 fases do escopo original foram concluídas.
 
 ## Stack
 
@@ -78,6 +84,31 @@ autenticação/permissões testado ponta a ponta em navegador real a cada fase.
 
 O middleware (`src/middleware.ts`) bloqueia cada área para quem não tem o
 papel correspondente e redireciona para a área correta.
+
+## Segurança
+
+- Senhas com hash `bcrypt`, nunca em texto puro.
+- Sessão via JWT assinado (`AUTH_SECRET`).
+- Toda rota de área (`/admin`, `/app`, `/espectador`) protegida por
+  middleware; toda mutação sensível também revalida a permissão no
+  servidor (`requireAdmin`, `requireTripMember`, `requireTripViewerAccess`
+  em `src/lib/guards.ts`) — nunca confia só na UI escondida.
+- Acesso por viagem: montador só age nas viagens em que está alocado,
+  espectador só lê as que foi autorizado a ver (`TripUser`/`TripViewer`).
+  Tentar acessar uma viagem alheia dá 404, nunca vazamento de dado.
+- Validação de entrada com Zod em toda action que recebe dado de formulário.
+- Rate limit de login: 5 tentativas por e-mail a cada 15 min
+  (`src/lib/rate-limit.ts`); a mesma mensagem genérica cobre senha errada
+  e bloqueio, para não revelar qual dos dois aconteceu.
+- Headers HTTP (`next.config.ts`): `X-Frame-Options: DENY`,
+  `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `Permissions-Policy`.
+- Rodar `npm run build && npm run start` (modo produção) encontrou e
+  corrigiu um bug real que o `npm run dev` não mostra: o NextAuth v5
+  rejeita requisições em produção se o header `Host` não bater com
+  `AUTH_URL`/`NEXTAUTH_URL` (erro `UntrustedHost`). Corrigido com
+  `trustHost: true` em `src/lib/auth.config.ts` — seguro aqui porque o
+  app não fica atrás de um proxy que possa forjar esse header por conta
+  própria.
 
 ## Instalação
 
@@ -164,12 +195,29 @@ src/lib/auth.ts         config completa do NextAuth (Node runtime)
 src/lib/auth.config.ts  config enxuta usada pelo middleware (Edge runtime)
 src/middleware.ts        proteção de rotas por papel
 src/app/(login|admin|app|espectador)  telas por papel
-src/components/          Logo, DashboardShell, etc.
+src/components/          Logo, DashboardShell, NotificationBell, etc.
+src/lib/                 prisma, guards, notifications, push, realtime,
+                         weather, places, geocode, rate-limit
 public/brand/            logo e ícones gerados a partir da arte oficial
+public/sw.js             service worker (push + cache PWA)
+public/manifest.webmanifest  manifest PWA
 ```
 
 ## Deploy
 
-Ainda não configurado — chega na Fase 7, junto com PWA e checklist de
-segurança final. Qualquer host que rode Next.js 15 + Postgres serve (Vercel
-+ banco gerenciado, Railway, um VPS com Node, etc.).
+Qualquer host que rode Next.js 15 + Postgres serve (Vercel + banco
+gerenciado, Railway, um VPS com Node, etc.). Antes de publicar:
+
+1. Configure todas as variáveis do `.env.example` no ambiente de produção
+   (no mínimo `DATABASE_URL` e `AUTH_URL`/`NEXTAUTH_URL` apontando para o
+   domínio real — isso é o que faz o Auth.js confiar no host).
+2. Rode `npx prisma migrate deploy` (não `migrate dev`) para aplicar as
+   migrations em produção.
+3. Rode `npm run db:seed` uma vez para criar o administrador inicial, e
+   troque a senha dele em seguida.
+4. `npm run build && npm run start`, ou deixe a plataforma (Vercel, etc.)
+   rodar esses comandos.
+5. Tempo real (SSE) e o rate limit de login usam memória do processo:
+   funcionam num deploy de instância única. Escalando para múltiplas
+   instâncias, essas duas coisas precisariam de um armazenamento
+   compartilhado (Redis, por exemplo).

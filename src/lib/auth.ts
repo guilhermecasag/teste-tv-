@@ -4,6 +4,10 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { authConfig } from "@/lib/auth.config";
+import { checkRateLimit, resetRateLimit } from "@/lib/rate-limit";
+
+const LOGIN_MAX_ATTEMPTS = 5;
+const LOGIN_WINDOW_MS = 15 * 60 * 1000;
 
 const credentialsSchema = z.object({
   email: z.string().email(),
@@ -24,14 +28,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!parsed.success) return null;
 
         const { email, password } = parsed.data;
+        const normalizedEmail = email.toLowerCase();
+
+        // Nao revela ao cliente se o motivo foi bloqueio por tentativas ou
+        // senha errada - mesma mensagem generica para os dois, de proposito.
+        const rateLimit = checkRateLimit(`login:${normalizedEmail}`, LOGIN_MAX_ATTEMPTS, LOGIN_WINDOW_MS);
+        if (!rateLimit.allowed) return null;
 
         const user = await prisma.user.findUnique({
-          where: { email: email.toLowerCase() },
+          where: { email: normalizedEmail },
         });
         if (!user || !user.active) return null;
 
         const valid = await bcrypt.compare(password, user.passwordHash);
         if (!valid) return null;
+
+        resetRateLimit(`login:${normalizedEmail}`);
 
         return {
           id: user.id,

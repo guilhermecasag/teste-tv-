@@ -9,6 +9,12 @@ export const authConfig = {
   session: { strategy: "jwt" },
   pages: { signIn: "/login" },
   providers: [],
+  // Em producao, o NextAuth v5 valida o header Host contra AUTH_URL/
+  // NEXTAUTH_URL por padrao e recusa qualquer coisa fora disso (erro
+  // "UntrustedHost"). Como este app roda atras do dominio configurado em
+  // NEXTAUTH_URL (nunca aceitando header Host arbitrario de outro lugar),
+  // confiar nele aqui e seguro.
+  trustHost: true,
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
