@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { DashboardShell } from "@/components/dashboard-shell";
+import { TripRealtimeRefresh } from "@/components/trip-realtime-refresh";
 
 const STATUS_LABEL: Record<string, string> = {
   PLANEJADA: "Planejada",
@@ -73,6 +74,7 @@ export default async function EspectadorTripPage({
 
   return (
     <DashboardShell userName={session.user.name ?? ""} role={session.user.role}>
+      <TripRealtimeRefresh tripId={trip.id} />
       <h1 className="text-xl font-semibold text-foreground">{trip.client.name}</h1>
       <p className="text-sm text-muted">
         📍 {trip.city} - {trip.state}

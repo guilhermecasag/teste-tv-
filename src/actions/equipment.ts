@@ -8,6 +8,8 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin, requireTripMember } from "@/lib/guards";
 import { addTimelineEvent } from "@/lib/timeline";
 import { saveEquipmentPhoto } from "@/lib/storage";
+import { notifyMany, getTripViewerIds, getAdminIds } from "@/lib/notifications";
+import { publish, tripChannel } from "@/lib/realtime";
 
 const STATUS_LABEL: Record<string, string> = {
   PENDENTE: "Pendente",
@@ -104,6 +106,39 @@ export async function updateEquipmentStatusAction(
     message: `${equipment.name}: status alterado para ${STATUS_LABEL[parsedStatus]}.`,
   });
 
+  publish(tripChannel(tripId), { kind: "equipment-status", equipmentId, status: parsedStatus });
+
+  if (parsedStatus === "CONCLUIDO") {
+    const viewerIds = await getTripViewerIds(tripId);
+    if (viewerIds.length > 0) {
+      const trip = await prisma.trip.findUniqueOrThrow({
+        where: { id: tripId },
+        include: { equipment: true, client: true },
+      });
+      const totalWeight = trip.equipment.reduce(
+        (sum, e) => sum + (trip.progressMethod === "PONDERADO" ? e.weight : 1),
+        0
+      );
+      const doneWeight = trip.equipment
+        .filter((e) => e.status === "CONCLUIDO")
+        .reduce((sum, e) => sum + (trip.progressMethod === "PONDERADO" ? e.weight : 1), 0);
+      const percent = totalWeight > 0 ? Math.round((doneWeight / totalWeight) * 100) : 0;
+
+      await notifyMany(viewerIds, {
+        type: "MONTAGEM",
+        title: trip.client.name,
+        message: `✓ ${equipment.name} concluído.`,
+        tripId,
+      });
+      await notifyMany(viewerIds, {
+        type: "PROGRESSO",
+        title: trip.client.name,
+        message: `A montagem chegou a ${percent}%.`,
+        tripId,
+      });
+    }
+  }
+
   revalidatePath(`/admin/viagens/${tripId}`);
   revalidatePath("/admin/equipamentos");
   revalidatePath("/app");
@@ -139,6 +174,8 @@ export async function updateObservationAction(
     type: "EQUIPAMENTO_OBSERVACAO",
     message: `${equipment.name}: observação atualizada.`,
   });
+
+  publish(tripChannel(tripId), { kind: "equipment-observation", equipmentId });
 
   revalidatePath(`/admin/viagens/${tripId}`);
   revalidatePath("/app/montagem");
@@ -193,6 +230,8 @@ export async function uploadPhotoAction(
     message: `${equipment.name}: foto de ${CATEGORY_LABEL[category.data]} adicionada.`,
   });
 
+  publish(tripChannel(tripId), { kind: "equipment-photo", equipmentId });
+
   revalidatePath(`/admin/viagens/${tripId}`);
   revalidatePath("/app/montagem");
   return { error: null };
@@ -232,7 +271,10 @@ export async function createIssueAction(
     return { error: parsed.error.issues[0]?.message ?? "Dados inválidos." };
   }
 
-  const equipment = await prisma.equipment.findUniqueOrThrow({ where: { id: equipmentId } });
+  const equipment = await prisma.equipment.findUniqueOrThrow({
+    where: { id: equipmentId },
+    include: { trip: { include: { client: true } } },
+  });
 
   await prisma.equipmentIssue.create({
     data: {
@@ -248,6 +290,16 @@ export async function createIssueAction(
     userId: session.user.id,
     type: "PENDENCIA_ABERTA",
     message: `${equipment.name}: pendência aberta — ${parsed.data.description}`,
+  });
+
+  publish(tripChannel(tripId), { kind: "equipment-issue" });
+
+  const [viewerIds, adminIds] = await Promise.all([getTripViewerIds(tripId), getAdminIds()]);
+  await notifyMany([...viewerIds, ...adminIds], {
+    type: "PROBLEMA",
+    title: equipment.trip.client.name,
+    message: `Foi registrada uma pendência no ${equipment.name}: ${parsed.data.description}`,
+    tripId,
   });
 
   revalidatePath(`/admin/viagens/${tripId}`);
@@ -271,6 +323,8 @@ export async function resolveIssueAction(issueId: string, tripId: string) {
     type: "PENDENCIA_RESOLVIDA",
     message: `${issue.equipment.name}: pendência resolvida — ${issue.description}`,
   });
+
+  publish(tripChannel(tripId), { kind: "equipment-issue" });
 
   revalidatePath(`/admin/viagens/${tripId}`);
   revalidatePath("/app/montagem");

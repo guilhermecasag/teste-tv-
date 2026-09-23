@@ -23,6 +23,7 @@
     "next-auth": "^5.0.0-beta.32",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
+    "web-push": "^3.6.7",
     "zod": "^4.6.5"
   },
   "devDependencies": {
@@ -32,6 +33,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/web-push": "^3.6.4",
     "eslint": "^9",
     "eslint-config-next": "^15.5.26",
     "playwright-core": "^1.63.0",

@@ -56,6 +56,17 @@ enum TimelineEventType {
   PENDENCIA_RESOLVIDA
 }
 
+/// Secao 20 do briefing.
+enum NotificationType {
+  NOVA_VIAGEM
+  ALTERACAO
+  VOO
+  MONTAGEM
+  PROBLEMA
+  PROGRESSO
+  MENSAGEM
+}
+
 model User {
   id           String   @id @default(cuid())
   name         String
@@ -76,6 +87,8 @@ model User {
   uploadedPhotos       EquipmentPhoto[]
   reportedIssues       EquipmentIssue[]
   timelineEvents       TimelineEvent[]
+  notifications        Notification[]
+  pushSubscriptions     PushSubscription[]
 
   @@map("users")
 }
@@ -274,4 +287,36 @@ model WeatherCache {
   fetchedAt   DateTime @default(now())
 
   @@map("weather_cache")
+}
+
+/// Central de notificacoes (sino no topo) - secoes 20-22 do briefing.
+model Notification {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  tripId String?
+
+  type    NotificationType
+  title   String
+  message String
+  read    Boolean          @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, read])
+  @@map("notifications")
+}
+
+/// Inscricoes Web Push (VAPID) por usuario/dispositivo - secao 39 do briefing.
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  @@map("push_subscriptions")
 }

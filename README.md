@@ -27,7 +27,10 @@ autenticação/permissões testado ponta a ponta em navegador real a cada fase.
 - [x] **Fase 5** — clima (Open-Meteo, com cache de ~3h em banco) e locais
       próximos (OpenStreetMap Nominatim + Overpass) com escolha de origem
       (minha localização / local da viagem / local do hotel).
-- [ ] Fase 6 — notificações (push) e tempo real
+- [x] **Fase 6** — central de notificações (sino), push real via VAPID
+      (gerado localmente, sem conta de terceiro) e tempo real via SSE —
+      viagens/equipamentos/pendências avisam quem precisa saber, e a tela
+      de quem está olhando atualiza sozinha, sem F5.
 - [ ] Fase 7 — PWA, responsividade final, segurança, testes
 
 ## Stack
@@ -43,6 +46,9 @@ autenticação/permissões testado ponta a ponta em navegador real a cada fase.
   pedido originalmente
 - **Notificações push** (Fase 6): Web Push com chaves VAPID geradas
   localmente — sem depender de conta de terceiro
+- **Tempo real** (Fase 6): Server-Sent Events (SSE) com um barramento em
+  processo — funciona para um deploy de instância única; múltiplas
+  instâncias precisariam de um pub/sub compartilhado (Redis, etc.)
 - **Fotos** (Fase 3): Supabase Storage/S3 se configurado; senão, disco local
   em `/public/uploads` (funcional, mas não recomendado em produção)
 

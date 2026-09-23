@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { signOutAction } from "@/actions/sign-out";
 import { AdminMoreMenu } from "@/components/admin-more-menu";
+import { NotificationBell } from "@/components/notification-bell";
 
 const NAV = [
   { href: "/admin", label: "Dashboard", icon: "📊" },
@@ -36,6 +37,7 @@ export function AdminShell({
           </nav>
 
           <div className="flex items-center gap-3">
+            <NotificationBell />
             <p className="hidden text-sm font-medium text-foreground sm:block">
               {userName}
             </p>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { signOutAction } from "@/actions/sign-out";
+import { NotificationBell } from "@/components/notification-bell";
 
 const NAV = [
   { href: "/app", label: "Início", icon: "🏠" },
@@ -20,11 +21,14 @@ export function MontadorShell({
     <div className="min-h-screen bg-background pb-20 sm:pb-0 sm:pl-56">
       <header className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-surface px-4 py-3 sm:hidden">
         <Logo variant="full" priority className="h-7 w-auto" />
-        <form action={signOutAction}>
-          <button type="submit" className="btn-secondary py-1.5 text-xs">
-            Sair
-          </button>
-        </form>
+        <div className="flex items-center gap-2">
+          <NotificationBell />
+          <form action={signOutAction}>
+            <button type="submit" className="btn-secondary py-1.5 text-xs">
+              Sair
+            </button>
+          </form>
+        </div>
       </header>
 
       <aside className="fixed inset-y-0 left-0 z-10 hidden w-56 flex-col border-r border-border bg-surface p-4 sm:flex">
@@ -41,7 +45,10 @@ export function MontadorShell({
           ))}
         </nav>
         <div className="mt-auto flex flex-col gap-2 border-t border-border pt-3">
-          <p className="truncate text-sm font-medium text-foreground">{userName}</p>
+          <div className="flex items-center justify-between">
+            <p className="truncate text-sm font-medium text-foreground">{userName}</p>
+            <NotificationBell />
+          </div>
           <form action={signOutAction}>
             <button type="submit" className="btn-secondary w-full py-1.5 text-xs">
               Sair

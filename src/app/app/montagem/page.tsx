@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { MontadorShell } from "@/components/montador-shell";
 import { EquipmentList } from "@/components/equipment/equipment-list";
 import { getActiveTripForMontador } from "@/lib/trips";
+import { TripRealtimeRefresh } from "@/components/trip-realtime-refresh";
 
 export default async function MontadorMontagemPage() {
   const session = await auth();
@@ -41,6 +42,7 @@ export default async function MontadorMontagemPage() {
 
   return (
     <MontadorShell userName={session.user.name ?? ""}>
+      <TripRealtimeRefresh tripId={trip.id} />
       <h1 className="text-xl font-semibold text-foreground">{trip.client.name}</h1>
       <p className="text-sm text-muted">Toque em um equipamento para ver detalhes.</p>
 

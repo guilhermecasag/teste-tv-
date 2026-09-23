@@ -2,6 +2,7 @@ import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { AdminShell } from "@/components/admin-shell";
+import { BroadcastButton } from "./broadcast-button";
 
 const STATUS_LABEL: Record<string, string> = {
   PLANEJADA: "Planejada",
@@ -16,7 +17,7 @@ export default async function AdminPage() {
   const session = await auth();
   if (!session) return null;
 
-  const [activeTrips, clientCount, montadorCount, equipmentTotal] =
+  const [activeTrips, clientCount, montadorCount, equipmentTotal, allTrips, allMontadores] =
     await Promise.all([
       prisma.trip.findMany({
         where: { status: { in: ["PLANEJADA", "EM_DESLOCAMENTO", "EM_MONTAGEM", "PAUSADA"] } },
@@ -27,13 +28,29 @@ export default async function AdminPage() {
       prisma.client.count(),
       prisma.user.count({ where: { role: "MONTADOR", active: true } }),
       prisma.equipment.count(),
+      prisma.trip.findMany({
+        include: { client: true },
+        orderBy: { startDate: "desc" },
+        take: 50,
+      }),
+      prisma.user.findMany({
+        where: { role: "MONTADOR", active: true },
+        orderBy: { name: "asc" },
+        select: { id: true, name: true },
+      }),
     ]);
 
   return (
     <AdminShell userName={session.user.name ?? ""}>
-      <h1 className="text-xl font-semibold text-foreground">
-        Olá, {session.user.name} 👋
-      </h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-xl font-semibold text-foreground">
+          Olá, {session.user.name} 👋
+        </h1>
+        <BroadcastButton
+          trips={allTrips.map((t) => ({ id: t.id, name: t.client.name }))}
+          montadores={allMontadores}
+        />
+      </div>
 
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div className="card">

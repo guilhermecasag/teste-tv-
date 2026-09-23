@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { MontadorShell } from "@/components/montador-shell";
 import { ChangePasswordForm } from "./change-password-form";
+import { PushSubscribeButton } from "@/components/push-subscribe-button";
 
 export default async function MontadorPerfilPage() {
   const session = await auth();
@@ -19,6 +20,11 @@ export default async function MontadorPerfilPage() {
         {user.cargo && <p className="mt-2 text-sm text-foreground">Cargo: {user.cargo}</p>}
         {user.phone && <p className="text-sm text-muted">📞 {user.phone}</p>}
         {user.whatsapp && <p className="text-sm text-muted">💬 {user.whatsapp}</p>}
+      </div>
+
+      <div className="card mt-4">
+        <p className="mb-3 text-sm font-semibold text-foreground">Notificações</p>
+        <PushSubscribeButton />
       </div>
 
       <div className="card mt-4">

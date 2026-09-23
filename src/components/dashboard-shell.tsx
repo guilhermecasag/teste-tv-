@@ -1,5 +1,6 @@
 import { Logo } from "@/components/logo";
 import { signOutAction } from "@/actions/sign-out";
+import { NotificationBell } from "@/components/notification-bell";
 
 const ROLE_LABEL: Record<string, string> = {
   ADMIN: "Administrador",
@@ -22,6 +23,7 @@ export function DashboardShell({
         <Logo variant="full" priority className="h-8 w-auto" />
 
         <div className="flex items-center gap-3">
+          <NotificationBell />
           <div className="text-right">
             <p className="text-sm font-medium text-foreground">{userName}</p>
             <p className="text-xs text-muted">{ROLE_LABEL[role] ?? role}</p>

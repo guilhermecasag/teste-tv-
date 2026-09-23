@@ -10,6 +10,7 @@ import { updateTravelInfoAction } from "@/actions/trips";
 import { getTripCoords, getHotelCoords } from "@/lib/trip-location";
 import { WeatherCard } from "@/components/weather-card";
 import { NearbyPlaces } from "@/components/nearby-places";
+import { TripRealtimeRefresh } from "@/components/trip-realtime-refresh";
 
 const STATUS_LABEL: Record<string, string> = {
   PLANEJADA: "Planejada",
@@ -81,6 +82,7 @@ export default async function ViagemDetailPage({
 
   return (
     <AdminShell userName={session.user.name ?? ""}>
+      <TripRealtimeRefresh tripId={trip.id} />
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-xl font-semibold text-foreground">{trip.client.name}</h1>

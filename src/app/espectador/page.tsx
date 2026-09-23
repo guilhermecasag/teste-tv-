@@ -2,6 +2,7 @@ import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { listViewerTrips } from "@/lib/trips";
+import { PushSubscribeButton } from "@/components/push-subscribe-button";
 
 const STATUS_LABEL: Record<string, string> = {
   PLANEJADA: "Planejada",
@@ -53,6 +54,11 @@ export default async function EspectadorPage() {
           })}
         </div>
       )}
+
+      <div className="card mt-4">
+        <p className="mb-2 text-sm font-semibold text-foreground">Notificações</p>
+        <PushSubscribeButton />
+      </div>
     </DashboardShell>
   );
 }
