@@ -14,8 +14,10 @@ autenticação/permissões testado ponta a ponta em navegador real a cada fase.
 
 - [x] **Fase 1** — arquitetura, banco, Prisma, autenticação, papéis de
       usuário (Administrador / Montador / Espectador), identidade visual, logo.
-- [ ] Fase 2 — clientes, viagens, montadores, equipamentos
-- [ ] Fase 3 — progresso, observações, fotos, pendências, timeline
+- [x] **Fase 2** — clientes, viagens (com equipe e dados de deslocamento/
+      hospedagem), montadores, usuários, equipamentos e cálculo automático
+      de progresso (%) por viagem.
+- [ ] Fase 3 — observações por equipamento, fotos, pendências, timeline
 - [ ] Fase 4 — dashboard, tela do montador, tela do espectador
 - [ ] Fase 5 — localização e clima
 - [ ] Fase 6 — notificações (push) e tempo real

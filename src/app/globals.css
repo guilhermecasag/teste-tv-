@@ -57,3 +57,30 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
+
+@layer components {
+  .field-label {
+    @apply text-sm font-medium text-foreground;
+  }
+  .field-input {
+    @apply w-full rounded-lg border border-border bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20;
+  }
+  .btn-primary {
+    @apply rounded-lg bg-brand-primary px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-primary-dark disabled:opacity-60;
+  }
+  .btn-secondary {
+    @apply rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-foreground transition hover:border-brand-primary hover:text-brand-primary disabled:opacity-60;
+  }
+  .btn-danger {
+    @apply rounded-lg border border-status-bloqueado/30 px-3 py-1.5 text-xs font-medium text-status-bloqueado transition hover:bg-status-bloqueado/10;
+  }
+  .card {
+    @apply rounded-xl border border-border bg-surface p-4;
+  }
+  .form-error {
+    @apply rounded-lg bg-status-bloqueado/10 px-3 py-2 text-sm text-status-bloqueado;
+  }
+  .badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium;
+  }
+}

@@ -13,6 +13,27 @@ enum Role {
   ESPECTADOR
 }
 
+enum TripStatus {
+  PLANEJADA
+  EM_DESLOCAMENTO
+  EM_MONTAGEM
+  PAUSADA
+  CONCLUIDA
+  CANCELADA
+}
+
+enum ProgressMethod {
+  IGUAL
+  PONDERADO
+}
+
+enum EquipmentStatus {
+  PENDENTE
+  EM_ANDAMENTO
+  CONCLUIDO
+  BLOQUEADO
+}
+
 model User {
   id           String   @id @default(cuid())
   name         String
@@ -21,9 +42,133 @@ model User {
   role         Role     @default(MONTADOR)
   phone        String?
   whatsapp     String?
+  cargo        String?
   active       Boolean  @default(true)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  tripMemberships      TripUser[]
+  responsibleFor       Equipment[]
+  createdClients       Client[]     @relation("ClientCreatedBy")
+  espectadorTrips       TripViewer[]
+
   @@map("users")
+}
+
+model Client {
+  id           String   @id @default(cuid())
+  name         String
+  cnpj         String?
+  contactName  String?
+  phone        String?
+  whatsapp     String?
+  address      String?
+  city         String?
+  state        String?
+  notes        String?
+  createdById  String?
+  createdBy    User?    @relation("ClientCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  trips Trip[]
+
+  @@map("clients")
+}
+
+model Trip {
+  id             String         @id @default(cuid())
+  clientId       String
+  client         Client         @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  address        String?
+  city           String
+  state          String
+  startDate      DateTime
+  endDate        DateTime
+  status         TripStatus     @default(PLANEJADA)
+  progressMethod ProgressMethod @default(IGUAL)
+  notes          String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  travelInfo TripTravelInfo?
+  members    TripUser[]
+  viewers    TripViewer[]
+  equipment  Equipment[]
+
+  @@map("trips")
+}
+
+/// Informacoes de deslocamento e hospedagem da viagem (secoes 8/9/30 do briefing).
+model TripTravelInfo {
+  id     String @id @default(cuid())
+  tripId String @unique
+  trip   Trip   @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  flightInfo    String?
+  transportInfo String?
+  driverName    String?
+  driverPhone   String?
+
+  hotelName      String?
+  hotelAddress   String?
+  hotelPhone     String?
+  hotelCheckIn   DateTime?
+  hotelCheckOut  DateTime?
+
+  notes String?
+
+  @@map("trip_travel_info")
+}
+
+/// Montadores alocados na viagem.
+model TripUser {
+  id     String @id @default(cuid())
+  tripId String
+  trip   Trip   @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([tripId, userId])
+  @@map("trip_users")
+}
+
+/// Espectadores/gestores autorizados a acompanhar a viagem.
+model TripViewer {
+  id     String @id @default(cuid())
+  tripId String
+  trip   Trip   @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([tripId, userId])
+  @@map("trip_viewers")
+}
+
+model Equipment {
+  id     String @id @default(cuid())
+  tripId String
+  trip   Trip   @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  name        String
+  code        String?
+  description String?
+  status      EquipmentStatus @default(PENDENTE)
+  /// Peso usado quando trip.progressMethod = PONDERADO. Ignorado em IGUAL.
+  weight      Float           @default(1)
+
+  responsibleId String?
+  responsible   User?   @relation(fields: [responsibleId], references: [id], onDelete: SetNull)
+
+  startedAt   DateTime?
+  completedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("equipment")
 }
